@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - develop*
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Europe/London
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential flex bison dwarves libssl-dev libelf-dev bc tzdata python3
+
+      - name: Build steps
+        run: |
+          uname -a
+          cp Microsoft/config-wsl .config
+          ./scripts/config --enable CONFIG_BT
+          ./scripts/config --enable CONFIG_BT_HCIBTUSB
+          ./scripts/config --enable CONFIG_RFKILL
+          make olddefconfig
+          make -j $(nproc)
+          sudo make modules_install -j $(nproc)
+          sudo make install -j $(nproc)
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            .config
+            arch/x86/boot/bzImage

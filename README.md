@@ -1,3 +1,27 @@
+# Readme (fork)
+
+The default WSL2 Linux kernel comes without Bluetooth support. The aim of this fork is to provide a kernel image with Bluetooth support.
+
+To build a custom kernel image:
+
+1. Open WSL, run `uname -r` and note down the kernel version
+2. Within the WSL kernel git repository, check out the branch that matches the version. The branches start with `linux-msft-wsl-`
+3. Cherry-pick and push the commit that adds a CI pipeline YAML file and enables Bluetooth options
+4. Once the CI pipeline is complete, download the job artifact, which contains the kernel image, `bzImage`
+5. Copy `bzImage` to `C:\bzImage`
+6. Create a file, `C:\Users\<USER>\.wslconfig` and write the following to it:
+
+```text
+[wsl2]
+kernel=C:\\bzImage
+```
+
+7. In Windows, disable Bluetooth to allow the adapter to be attached to WSL
+8. In WSL, install the dependencies to use Bluetooth: `sudo apt install dbus rfkill bluez`
+9. From PowerShell, run `wsl --shutdown` to force loading new kernel
+10. Run `usbipd list` to find the Bluetooth adapter
+11. Run `usbipd attach -b <BUS_ID> --wsl -a` on the Bluetooth adapter to attach it to WSL
+
 # Introduction
 
 The [WSL2-Linux-Kernel][wsl2-kernel] repo contains the kernel source code and
